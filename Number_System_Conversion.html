@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Number Base Conversion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 12px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .result-table th, .result-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .result-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Number Base Conversion</h1>
+    
+    <!-- Input field for the number to be converted -->
+    <div class="form-group">
+        <label for="number">Number:</label>
+        <input type="text" id="number" placeholder="Enter the number">
+    </div>
+    
+    <!-- Select base of the input number -->
+    <div class="form-group">
+        <label for="base">Base of the Number:</label>
+        <select id="base">
+            <option value="2">Binary (2)</option>
+            <option value="8">Octal (8)</option>
+            <option value="10" selected>Decimal (10)</option>
+            <option value="16">Hexadecimal (16)</option>
+        </select>
+    </div>
+    
+    <!-- Input field for decimal precision of fractional conversions -->
+    <div class="form-group">
+        <label for="precision">Decimal Places for Float Conversion:</label>
+        <input type="text" id="precision" placeholder="Enter number of decimal places" value="4">
+    </div>
+    
+    <!-- Convert button triggers the conversion function -->
+    <button onclick="convertNumber()">Convert</button>
+    
+    <!-- Results will display here in a table format -->
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+/*
+ * Function to perform the conversion and display results in all number systems
+ * except the selected base. Results are shown in a table for better readability.
+ */
+function convertNumber() {
+    let number = document.getElementById('number').value;
+    let base = parseInt(document.getElementById('base').value);
+    let precision = parseInt(document.getElementById('precision').value);
+    
+    let parts = number.split('.');
+    let integerPart = parts[0];
+    let fractionalPart = parts[1] || '';
+
+    // Convert integer part to decimal
+    let decimalInteger = parseInt(integerPart, base);
+
+    // Convert fractional part to decimal
+    let decimalFractional = 0;
+    if (fractionalPart) {
+        for (let i = 0; i < fractionalPart.length; i++) {
+            decimalFractional += parseInt(fractionalPart[i], base) / Math.pow(base, i + 1);
+        }
+    }
+
+    // Combine integer and fractional parts into a single decimal number
+    let decimalNumber = decimalInteger + decimalFractional;
+
+    // Convert and display results in a table for all other bases
+    const bases = { 2: 'Binary', 8: 'Octal', 10: 'Decimal', 16: 'Hexadecimal' };
+    let result = `
+        <table class="result-table">
+            <tr>
+                <th>Number System</th>
+                <th>Converted Value</th>
+            </tr>
+    `;
+
+    for (const [targetBase, baseName] of Object.entries(bases)) {
+        if (parseInt(targetBase) !== base) {
+            // Convert integer part to the target base
+            let targetInteger = decimalInteger.toString(targetBase);
+
+            // Convert fractional part to the target base with the specified precision
+            let targetFractional = fractionalToBase(decimalFractional, targetBase, precision);
+
+            result += `
+                <tr>
+                    <td>${baseName}</td>
+                    <td>${targetInteger}${targetFractional ? '.' + targetFractional : ''}</td>
+                </tr>
+            `;
+        }
+    }
+    
+    result += '</table>';
+    document.getElementById('result').innerHTML = result;
+}
+
+/*
+ * Helper function to convert a fractional part from decimal to the specified base.
+ * Handles precision as defined by the user.
+ */
+function fractionalToBase(fractionalPart, base, precision) {
+    let result = '';
+    for (let i = 0; i < precision; i++) {
+        fractionalPart *= base;
+        let integerPart = Math.floor(fractionalPart);
+        result += integerPart.toString(base);
+        fractionalPart -= integerPart;
+        if (fractionalPart === 0) break;
+    }
+    return result;
+}
+</script>
+
+</body>
+</html>
